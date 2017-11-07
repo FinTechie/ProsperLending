@@ -1,6 +1,8 @@
 ---
 title: "LoanData"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -171,6 +173,14 @@ summary(ld$Status)
 
 
 ```{r}
+labs <- c('NA', 'Debt Cons', 'HomeImp', 'Biz', 'PerLoan', 'Student', 'Auto', 'Other', 'Baby', 'Boat', 'Cosmetic', 'EngRing', 'Green', 'HouseholdExp', 'LargePurch', 'Med/Dental', 'Motorcycle', 'RV', 'Taxes', 'Vaca', 'Wedding')
+
+ld$Category <- factor(ld$ListingCategory..numeric.,
+                      labels = labs)
+```
+
+
+```{r}
 summary(ld$Status)
 ```
 
@@ -231,6 +241,42 @@ ggplot(ld2, aes(x = factor(ProsperGradeAll), y = perc*100, fill = factor(Status)
 
 
 ```{r}
+ld3 <- ld %>% 
+  group_by(Occupation,Status) %>% 
+  summarise(count=n()) %>% 
+  mutate(perc=count/sum(count))
+
+ggplot(ld3, aes(factor(Occupation), y = perc*100, fill = Status)) + 
+  geom_bar(stat='identity') +
+  theme(axis.text.y = element_text(size=8)) + 
+  coord_flip()
+```
+
+```{r}
+ld4 <- ld %>% 
+  group_by(Category,Status) %>% 
+  summarise(count=n()) %>% 
+  mutate(perc=count/sum(count))
+
+ggplot(ld4, aes(factor(Category), y = perc*100, fill = Status)) + 
+  geom_bar(stat='identity') +
+  coord_flip()+
+  theme(axis.text.y = element_text(size=12))
+  #theme(axis.text.x = element_text(angle = 90, hjust = 1, size=8))
+```
+
+
+
+```{r}
+#ggplot(ld2, aes(x = factor(ProsperGradeAll), y = perc*100, fill = factor(Status))) +
+#  geom_bar(stat="identity", width = 0.7) +
+#  theme_minimal(base_size = 14) +
+#  coord_polar(theta = "y") +
+#  ylim(c(0,75))
+```
+
+
+```{r}
 #Now lets make a dataframe of the completed loans
 ldcomplete <- subset(ld, LoanStatus == 'Completed')
 ```
@@ -238,13 +284,13 @@ ldcomplete <- subset(ld, LoanStatus == 'Completed')
 
 
 ```{r}
-ldcompletefact <- ldcomplete[,c('AvgCreditScore', 'ProsperScoreAll', 'EmploymentStatusDuration', 'IsBorrowerHomeowner', 'OpenCreditLines', 'TotalCreditLinespast7years', 'OpenRevolvingAccounts', 'InquiriesLast6Months', 'TotalInquiries', 'CurrentDelinquencies', 'DelinquenciesLast7Years', 'PublicRecordsLast10Years', 'PublicRecordsLast12Months', 'BankcardUtilization', 'TotalTrades', 'TradesNeverDelinquent..percentage.', 'TradesOpenedLast6Months', 'DebtToIncomeRatio', 'IncomeVerifiable', 'StatedMonthlyIncome')]
+#ldcompletefact <- ldcomplete[,c('AvgCreditScore', 'ProsperScoreAll', 'EmploymentStatusDuration', 'IsBorrowerHomeowner', 'OpenCreditLines', 'TotalCreditLinespast7years', 'OpenRevolvingAccounts', 'InquiriesLast6Months', 'TotalInquiries', 'CurrentDelinquencies', 'DelinquenciesLast7Years', 'PublicRecordsLast10Years', 'PublicRecordsLast12Months', 'BankcardUtilization', 'TotalTrades', 'TradesNeverDelinquent..percentage.', 'TradesOpenedLast6Months', 'DebtToIncomeRatio', 'IncomeVerifiable', 'StatedMonthlyIncome')]
 ```
 
 
 ```{r}
 #Only using complete cases without any nulls
-ldcompletefact <- ldcompletefact[complete.cases(ldcompletefact),]
+#ldcompletefact <- ldcompletefact[complete.cases(ldcompletefact),]
 ```
 
 
