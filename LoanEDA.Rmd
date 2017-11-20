@@ -1,12 +1,15 @@
 ---
 title: "Prosper Loan Exploratory Data Analysis"
-author: Mustafa Olomi
-date: 11 20, 2017
-output: 
+author: "Mustafa Olomi"
+date: "11 20, 2017"
+output:
+  word_document:
+    toc: yes
+    toc_depth: '3'
   html_document:
-    toc: TRUE
+    toc: yes
     toc_depth: 3
-    toc_float: TRUE
+    toc_float: yes
 ---
 
 
@@ -56,9 +59,10 @@ ld$AvgCreditScore <- (ld$CreditScoreRangeUpper+ld$CreditScoreRangeLower) / 2
 ```
 
 
-Plotting the distribution of avg credit scores. The middle line is the mean
-Most traditional companies would want to know the credit score of the 
-portfolio as it is a more universal measuring yardstick
+Plotting the distribution of avg credit scores.
+
+Most traditional companies want to know the credit score of the portfolio, as 
+it is a more universal measurement.
 
 ```{r echo=FALSE, Univariate_Plots}
 ggplot(ld, aes(AvgCreditScore)) +geom_histogram(color='black', 
@@ -74,12 +78,17 @@ We can see the mean credit score for all loans is 695
 This is considered "good" credit according to Experiean
 
 300-579 is Very Poor (17% of people) may not be approved for credit at all
+
 580-669 is Fair (20.2%) considered subprime
+
 679-739 is Good (21.5%) 8% liklihood of serious delinquency
+
 740-799 is Very Good (18.2%) likely to receive better than avg rates
-800-850 is Exceptional(19.9%) at the top of the list for best rates w lenders
+
+800-850 is Exceptional(19.9%) at the top of the list for best rates with lenders
 
 https://www.experian.com/blogs/ask-experian/credit-education/score-basics
+
 
 
 Creating labels for each of the categories
@@ -115,8 +124,9 @@ ld$LoanDate <- as.Date(ld$LoanOriginationDate, "%Y-%m-%d")
 ```
 
 In the documentation it says:
-Pre  2009 prosper generated grades with the variable CreditGrade 
-Post 2009 they used the grade ProsperRating Alpha 
+Before  2009 prosper generated grades with the variable CreditGrade
+
+After 2009 they used the grade ProsperRating Alpha 
 
 Here we are creating a universal grading standard with all grades
 
@@ -160,8 +170,8 @@ We could simplify this an better define the categories
 summary(ld$LoanStatus)
 ```
 
-Based on the existing categories we can see that most of the status's are
-centered around being complete, current or chargedoff/defaulted
+We can see that most of the statuses are centered around being complete, current 
+or chargedoff/defaulted
 
 According to Prosper's website: 
 A borrower loan is charged-off when it reaches 121 days past due.
@@ -171,18 +181,23 @@ ggplot(ld, aes(LoanStatus)) + geom_histogram(stat='count', fill = 'light blue') 
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-Lets check to see where we should categorize the final payment loans 
-Looking at their % funded
+Lets check to see where we should categorize the final payment loans
+based on their % funded
+
+
 Because they are 99.65% funded we'll categorize them as 'Complete'
 
 ```{r}
 summary(subset(ld, LoanStatus=='FinalPaymentInProgress')$PercentFunded)
 ```
 
-Because the data is centered around complete, current and chargedoff/defaulted
+The data is centered around complete, current and chargedoff/defaulted so
 I am regrouping the data below into those categories
 
+
 Summarizing all past dues as one category so we can easily see them together
+
+
 Summarizing charged off & defaulted as one category because they are similar
 
 With this we can see the loans as a narrower category range and better view the
@@ -245,12 +260,13 @@ ggplot(ld, aes(ProsperGradeAll)) + geom_histogram(stat = 'count',
 
 #Bivariate Analysis
 
-Now looking at the interest rate among the 4 main categories we set 
-The top 75 percentile of completed loans were 25.11%
+Now looking at the interest rate among the 4 main categories we see 
+the top 75 percentile of completed loans were 25.11%.
+
 It's also interesting to see that that is near the median of bad loans
-Past due and defaulted loans have a median just under 25.11% 
-So this is a good indicator of when a loan may be too expensive or too
-high risk for clients.
+
+Past due and defaulted loans have a median just under 25.11% so this is a good 
+indicator of when a loan may be too expensive or too high risk for clients.
 
 ```{r}
 ggplot(ld, aes(Status, BorrowerRate)) +geom_boxplot(fill = 'light blue') +
@@ -266,8 +282,9 @@ quantile(subset(ld, Status=='Completed')$BorrowerRate,
                                    probs = 0.75, na.rm = TRUE)
 ```
 
-This shows the distribution of prosper grades and interest rates
-We can see that 24.2 is the median rate for D grade loans
+This shows the distribution of prosper grades and interest rates and
+we can see that 24.2 is the median rate for D grade loans.
+
 Interesting that this is close to the median of past due/defaulted loans
 23.85 is the median for defaulted vs 24.19 for D grade loans
 
@@ -295,7 +312,8 @@ median(subset(ld, ProsperGradeAll=='D')$BorrowerRate)
 median(subset(ld, Status=='Defaulted')$BorrowerRate)
 ```
 
-Unemployed borrowers had a median rate of 26%, higher than loans to employed
+Unemployed borrowers had a median rate of 26%, substantially higher than loans 
+to employed borrowers.
 
 ```{r}
 ggplot(ld, aes(EmploymentStatus, BorrowerRate),) + 
@@ -318,19 +336,21 @@ median(subset(ld,  Status=='Defaulted')$BorrowerRate)
 ```
 
 The most interesting relationship I saw was the fact that bad loans tended
-to be around the 25% interest rate level, thats the median for defaulted 
+to be around the 25% interest rate level, that's the median for defaulted 
 loans, and around the median for D grade loans and for unemployed borrowers
 
-Whatever the case, a borrower that is willing to pay close to 25% is usually
-a sign of financial irresponsibility that leads to bad performing loans
+Whatever the case, borrowers willing to pay up to 25% are usually
+a sign of financial irresponsibility leading to bad performing loans
 
 
 # Multivariate Plots Section
 
 
-When examining the income rates of employed individuals and their rates
-We can see that a good floor for income level is $3000
+Examining the income rates of employed individuals and their rates
+we can see that a good floor for income level is $3000
+
 This is the median income for defaulted loans in the HR category
+
 It is also the bottom 25% of most almost every other grades defaulted loan
 
 
@@ -365,10 +385,12 @@ median(subset(ld, ProsperGradeAll=='C' & IncomeVerifiable=='False')
 ```
 
 
-It looks like the Prosper grades also shifted like the way credit scores did
+It looks like the Prosper grades and credit ratings shifted.
+
 Just because the above graph resembles a normal distribution, doesn't mean
-that it is a normal distribtion, credit standards changed after 2009
-We will explore this in the bivariate plot section also
+that it is a normal distribtion
+
+Credit standards changed after 2009
 
 ```{r}
 ggplot(ld, aes(x=ProsperGradeAll)) +
@@ -383,8 +405,10 @@ ggplot(ld, aes(x=ProsperGradeAll)) +
 
 
 I am looking at the data before 2009 and after 2009
-Prosper went through some changes because of the credit crisis and we can
-see how they changed their lending criteria before and after 2009
+
+
+Prosper went through changes due to the credit crisis & we can
+see they changed their lending criteria before & after 2009
 
 ```{r}
 ggplot(ld, aes(x=AvgCreditScore)) +
@@ -420,9 +444,11 @@ mean(subset(ld, ClosedDate < '2009-01-01')$AvgCreditScore, na.rm = T)
 
 
 Because debt consolidation is the most popular loan category it is worth
-exploring this category more and seeing what trends make successful loans
+exploring further this category more and seeing what trends make successful 
+loans in this category.
 
-Below we can see the debt to income of Completed vs Defualted loans
+We can see the debt to income of Completed vs Defualted loans.
+
 Defaulted loans have 24% higher mean debt to income ratio 25% vs 31%
 
 ```{r}
@@ -458,6 +484,7 @@ mean(subset(ld, Category == 'Debt Cons'
 ```
 
 Looking at the bank card utilizatin rate at completed and defaulte loans
+
 We can see that unsuccessful loans had 22% higher bank card utilization
 50% vs 61%
 
@@ -487,8 +514,8 @@ mean(subset(ld, Category != 'Debt Cons')$BankcardUtilization, na.rm = TRUE)
 ```
 
 
-The loan quarter is formatted so that the Q is written first then the year
-Thus below we are transforming it so the year is frst then the Q
+The loan quarter is formatted so that the Q is written first then the year,
+so we are transforming it so the year is frst then the Q
 
 
 ```{r}
@@ -500,8 +527,8 @@ I visualized the loan payments by quarter by grade so we can see where their
 cash flows are coming from on a rolling quarter to quarter basis. We can see 
 that C grade loans have grown more popular ad received more funding recently 
 while B and A loans have remained consistent, and the number of AA loan 
-flows droppedd after 2009 perhaps because the credit market recovered and 
-good borrowers have refinanced or found other funding options.
+flows dropped after 2009 perhaps because the credit market recovered and 
+good borrowers have refinanced with better funding options.
 
 ```{r}
 ggplot(ld, aes(LoanQtr, LP_CustomerPayments/1000000, fill = ProsperGradeAll)) +
@@ -510,8 +537,10 @@ ggplot(ld, aes(LoanQtr, LP_CustomerPayments/1000000, fill = ProsperGradeAll)) +
   scale_fill_brewer(palette="Pastel1")
 ```
 
-Below we can see the loan amounts (in millions) based on grade so we can see
+We can see the loan amounts (in millions) based on grade so we can see
 the quality of the loans originated as well as the amount of the loan.
+
+
 We see that A, B, & C loans all grew in terms of loans originated near 2013
 
 ```{r}
@@ -522,6 +551,7 @@ ggplot(ld, aes(LoanQtr, LoanOriginalAmount/1000000, fill = ProsperGradeAll)) +
 ```
 
 Now we can look at each loan category and see if they are in good standing
+
 We see the distribution in millions of how many million are in each status
 
 ```{r}
@@ -532,7 +562,10 @@ ggplot(ld, aes(ProsperGradeAll, LoanOriginalAmount/1000000, fill = Status)) +
 ```
 
 Below we can see what percentage of each status is complete, past due etc.
+
 It looks like the largest incremental percentage jump is between C and D
+
+
 This combined with our earlier analysis that showed D loans as having
 a median interest rate similar to the defaulted status tells us C is 
 probably the lowest category of loan that is a good investment.
@@ -554,10 +587,11 @@ Below we see the different occupations of loan holders and what percentage
 of those loans are in good or bad standing
 
 Students at technical schools have the worst performing loans of all
+
 Judges, Psycholigst and Dentists have the lowest default ratings
 
-Further analysis could be done with students where we take into account
-Schools they attend, graduation rates, grades, and job placement data
+Further analysis could be done with students taking into account
+school info, graduation rates, grades, & job placement data
 
 ```{r}
 ld3 <- ld %>% 
@@ -573,10 +607,11 @@ ggplot(ld3, aes(factor(Occupation), y = perc*100, fill = Status)) +
 ```
 
 Now you can see the loan based on loan reason and the current standing
-N/A and personal loans are the worst performing with students also
-Continue to perform badly and have high defaults.
 
-RV loans perform much better than all other categories perhaps because
+N/A and personal loans are the worst performing with students also
+continue to perform badly and have high defaults.
+
+RV loans perform much better than all other categories, perhaps because
 RV customers are usually retired and older and trying to finance their
 luxury purchase longer term.
 
@@ -598,8 +633,9 @@ ggplot(ld4, aes(factor(Category), y = perc*100, fill = Status)) +
 # Final Plots and Summary
 
 First I think it's important to see Prosper's credit rating distribution
+
 This plot shows both the pre credit crisis and post credit crisis data
-It's good to see how Prosper adjusted their standards afterwards
+It's good to see how Prosper adjusted their standards
 
 Prosper's adjustments show us that they initially took on many loans of
 all different credit categories to gain marketshare but after 2009
@@ -652,8 +688,8 @@ NA and Personal loans perform the worst perhaps because the reason for the
 loan is not specified and because borrowers that do not have a specific
 reason for the loan. 
 
-Luxury items like RV, Motorcycle, and Boats perform the best because people
-would not buy these items unless they could afford the luxury
+Luxury items like RVs, Motorcycles & Boats perform the best because people
+may not buy these items unless they could afford luxury
 
 Wedding, engagement rings, etc are all also times that require people to be
 a lot more responsible so these loans look like they are more successful
@@ -683,7 +719,7 @@ I would look for loans that are below the 25% rate and C grade or above
 Also people who are employed and make $3000 per month and certain categories
 
 For debt consolidation loans I would look at credit card utilization rates
-and debt to income rate that are closer to that of complete or current loans
+and debt/income rates closer to those of complete or current loans
 
 I was surprised to see that loans for luxury goods had such high completions 
 Some of the struggles I had were that defaulted and completed loans had many
@@ -694,8 +730,8 @@ I think having more unique data points like what types of schools students
 were applying from and the students stats like their grades and majors
 would be helpful in finding successful loans
 
-I think there is no reason to give N/A loans, and personal loans need to 
-have more of a description of what the funds are being used for
+There is no reason to give N/A & personal loans. We need to have more of a 
+description of what the funds are being used for.
 
 To take this analysis further I would backtest the parameters I found for 
 successful loans and come up with a factor analysis to see how the different
