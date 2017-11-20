@@ -1,13 +1,17 @@
 ---
-output:
-  html_document: default
-  word_document: default
+title: "Prosper Loan Exploratory Data Analysis"
+author: Mustafa Olomi
+date: 11 20, 2017
+output: 
+  html_document:
+    toc: TRUE
+    toc_depth: 3
+    toc_float: TRUE
 ---
 
-Prosper Loan Exploratory Data Analysis by Mustafa Olomi
-========================================================
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 library(ggplot2)
 library(dplyr)
 library(grid)
@@ -22,29 +26,29 @@ ld <- read.csv('prosperLoanData.csv')
 ```
 
 # **Introduction**: 
->###This is an exploratory analysis of the data from the peer to peer
+This is an exploratory analysis of the data from the peer to peer
 lending company Prosper. The dataset contains over 100,000 borrowers with 84
 variables. Prosper connects lenders, who are individual investors that can 
 selectively invest their money in loans to borrowers based on a variety of 
 criteria like credit score, prospers rating grade, profession, loan type & more.
 
->###In this analysis I aim to visualize and understand the characteristics of a 
+In this analysis I aim to visualize and understand the characteristics of a 
 good loan prospect and some of the qualities that make up bad loans, as well 
 as Prosper's overall customer and loan profiles.
 
 # Univariate Plots Section
 
->In this section, I perform some preliminary exploration of the dataset
+In this section, I perform some preliminary exploration of the dataset
 
->###Firstly I take out the cancelled loans because there are only a few cancelled
->###loans and the loans were not initialized so we don't need them in our data
+Firstly I take out the cancelled loans because there are only a few cancelled
+loans and the loans were not initialized so we don't need them in our data
 
 ```{r}
 #Taking out cancelled loans
 ld <- subset(ld, LoanStatus != "Cancelled")
 ```
 
->###The avg credit score will give us a better datapoint to measure against
+The avg credit score will give us a better datapoint to measure against
 
 ```{r}
 #Averaging lower and upper credit score
@@ -52,9 +56,9 @@ ld$AvgCreditScore <- (ld$CreditScoreRangeUpper+ld$CreditScoreRangeLower) / 2
 ```
 
 
->###Plotting the distribution of avg credit scores. The middle line is the mean
->###Most traditional companies would want to know the credit score of the 
->###portfolio as it is a more universal measuring yardstick
+Plotting the distribution of avg credit scores. The middle line is the mean
+Most traditional companies would want to know the credit score of the 
+portfolio as it is a more universal measuring yardstick
 
 ```{r echo=FALSE, Univariate_Plots}
 ggplot(ld, aes(AvgCreditScore)) +geom_histogram(color='black', 
@@ -66,19 +70,19 @@ ggplot(ld, aes(AvgCreditScore)) +geom_histogram(color='black',
            color = "red")
 ```
 
->###We can see the mean credit score for all loans is 695
->###This is considered "good" credit according to Experiean
+We can see the mean credit score for all loans is 695
+This is considered "good" credit according to Experiean
 
->###300-579 is Very Poor (17% of people) may not be approved for credit at all
->###580-669 is Fair (20.2%) considered subprime
->###679-739 is Good (21.5%) 8% liklihood of serious delinquency
->###740-799 is Very Good (18.2%) likely to receive better than avg rates
->###800-850 is Exceptional(19.9%) at the top of the list for best rates w lenders
+300-579 is Very Poor (17% of people) may not be approved for credit at all
+580-669 is Fair (20.2%) considered subprime
+679-739 is Good (21.5%) 8% liklihood of serious delinquency
+740-799 is Very Good (18.2%) likely to receive better than avg rates
+800-850 is Exceptional(19.9%) at the top of the list for best rates w lenders
 
->###https://www.experian.com/blogs/ask-experian/credit-education/score-basics
+https://www.experian.com/blogs/ask-experian/credit-education/score-basics
 
 
->###Creating labels for each of the categories
+Creating labels for each of the categories
 
 ```{r}
 labs <- c('NA', 'Debt Cons', 'HomeImp', 'Biz', 'PerLoan', 'Student', 'Auto', 
@@ -86,11 +90,10 @@ labs <- c('NA', 'Debt Cons', 'HomeImp', 'Biz', 'PerLoan', 'Student', 'Auto',
           'HouseholdExp', 'LargePurch', 'Med/Dental', 'Motorcycle', 'RV', 
           'Taxes', 'Vaca', 'Wedding')
 
-ld$Category <- factor(ld$ListingCategory..numeric.,
-                      labels = labs)
+ld$Category <- factor(ld$ListingCategory..numeric., labels = labs)
 ```
 
->###Debt consolidation is the highest category with over 50% of the loans
+Debt consolidation is the highest category with over 50% of the loans
 
 ```{r}
 ld.cats <- ld %>%
@@ -111,11 +114,11 @@ ggplot(ld.cats, aes(x = reorder(Category, catpercs), y = catpercs*100)) +
 ld$LoanDate <- as.Date(ld$LoanOriginationDate, "%Y-%m-%d")
 ```
 
->###In the documentation it says:
->###Pre  2009 prosper generated grades with the variable CreditGrade 
->###Post 2009 they used the grade ProsperRating Alpha 
+In the documentation it says:
+Pre  2009 prosper generated grades with the variable CreditGrade 
+Post 2009 they used the grade ProsperRating Alpha 
 
->###Here we are creating a universal grading standard with all grades
+Here we are creating a universal grading standard with all grades
 
 ```{r}
 ld <- ld %>%
@@ -149,35 +152,41 @@ ld$ClosedDate <- as.Date(ld$ClosedDate, "%Y-%m-%d")
 ld$FirstRecordedCreditLine <- as.Date(ld$FirstRecordedCreditLine, "%Y-%m-%d")
 ```
 
->###We can see we have many categories, including 6 past due categories 
->###We could simplify this an better define the categories
+We can see we have many categories, including 6 past due categories 
+We could simplify this an better define the categories
 
 ```{r}
 #Lets check what loan statuses we have
 summary(ld$LoanStatus)
 ```
 
->###Based on the existing categories we can see that most of the status's are
->###centered around being complete, current or chargedoff/defaulted
+Based on the existing categories we can see that most of the status's are
+centered around being complete, current or chargedoff/defaulted
 
->###According to Prosper's website: 
->###A borrower loan is charged-off when it reaches 121 days past due.
+According to Prosper's website: 
+A borrower loan is charged-off when it reaches 121 days past due.
 
 ```{r}
 ggplot(ld, aes(LoanStatus)) + geom_histogram(stat='count', fill = 'light blue') +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
->###Lets check to see where we should categorize the final payment loans 
->###Looking at their % funded
->###Because they are 99.65% funded we'll categorize them as 'Complete'
+Lets check to see where we should categorize the final payment loans 
+Looking at their % funded
+Because they are 99.65% funded we'll categorize them as 'Complete'
 
 ```{r}
 summary(subset(ld, LoanStatus=='FinalPaymentInProgress')$PercentFunded)
 ```
 
->###Summarizing All Past Dues as one category 
->###Summarizing Charged Off & Defaulted as one category
+Because the data is centered around complete, current and chargedoff/defaulted
+I am regrouping the data below into those categories
+
+Summarizing all past dues as one category so we can easily see them together
+Summarizing charged off & defaulted as one category because they are similar
+
+With this we can see the loans as a narrower category range and better view the
+loans and what standing they are in
 
 ```{r}
 #When I used the case_when, it does this as a character instead of a vector
@@ -203,14 +212,15 @@ ld$Status <- factor(ld$Status, levels = c('Completed', 'Current',
 summary(ld$Status)
 ```
 
->###This is the distribution of completed, current, past due and defaulted loans
+
+This is the distribution of completed, current, past due and defaulted loans
 
 ```{r}
 ggplot(ld, aes(Status)) + geom_histogram(stat='count', fill = 'light blue') +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
->###This is the same distribution but is a percentage distribution
+This is the same distribution but is a percentage distribution
 
 ```{r}
 ggplot(ld, aes(x=Status)) +
@@ -224,8 +234,8 @@ ggplot(ld, aes(x=Status)) +
 summary(ld$ProsperGradeAll)
 ```
 
->###Interesting to see that it does look like a normal distribution curve
->###Even though their credit ratings are not as normal
+Interesting to see that it does look like a normal distribution curve
+Even though their credit ratings are not as normal
 
 ```{r}
 ggplot(ld, aes(ProsperGradeAll)) + geom_histogram(stat = 'count', 
@@ -235,12 +245,12 @@ ggplot(ld, aes(ProsperGradeAll)) + geom_histogram(stat = 'count',
 
 #Bivariate Analysis
 
->###Now looking at the interest rate among the 4 main categories we set 
->###The top 75 percentile of completed loans were 25.11%
->###It's also interesting to see that that is near the median of bad loans
->###Past due and defaulted loans have a median just under 25.11% 
->###So this is a good indicator of when a loan may be too expensive or too
->###high risk for clients.
+Now looking at the interest rate among the 4 main categories we set 
+The top 75 percentile of completed loans were 25.11%
+It's also interesting to see that that is near the median of bad loans
+Past due and defaulted loans have a median just under 25.11% 
+So this is a good indicator of when a loan may be too expensive or too
+high risk for clients.
 
 ```{r}
 ggplot(ld, aes(Status, BorrowerRate)) +geom_boxplot(fill = 'light blue') +
@@ -256,10 +266,10 @@ quantile(subset(ld, Status=='Completed')$BorrowerRate,
                                    probs = 0.75, na.rm = TRUE)
 ```
 
->###This shows the distribution of prosper grades and interest rates
->###We can see that 24.2 is the median rate for D grade loans
->###Interesting that this is close to the median of past due/defaulted loans
->###23.85 is the median for defaulted vs 24.19 for D grade loans
+This shows the distribution of prosper grades and interest rates
+We can see that 24.2 is the median rate for D grade loans
+Interesting that this is close to the median of past due/defaulted loans
+23.85 is the median for defaulted vs 24.19 for D grade loans
 
 ```{r}
 ggplot(ld, aes(ProsperGradeAll, BorrowerRate)) + 
@@ -285,7 +295,7 @@ median(subset(ld, ProsperGradeAll=='D')$BorrowerRate)
 median(subset(ld, Status=='Defaulted')$BorrowerRate)
 ```
 
->###Unemployed borrowers had a median rate of 26%, higher than loans to employed
+Unemployed borrowers had a median rate of 26%, higher than loans to employed
 
 ```{r}
 ggplot(ld, aes(EmploymentStatus, BorrowerRate),) + 
@@ -307,21 +317,21 @@ median(subset(ld, EmploymentStatus=='Not employed')$BorrowerRate)
 median(subset(ld,  Status=='Defaulted')$BorrowerRate)
 ```
 
->###The most interesting relationship I saw was the fact that bad loans tended
->###to be around the 25% interest rate level, thats the median for defaulted 
->###loans, and around the median for D grade loans and for unemployed borrowers
+The most interesting relationship I saw was the fact that bad loans tended
+to be around the 25% interest rate level, thats the median for defaulted 
+loans, and around the median for D grade loans and for unemployed borrowers
 
->###Whatever the case, a borrower that is willing to pay close to 25% is usually
->###a sign of financial irresponsibility that leads to bad performing loans
+Whatever the case, a borrower that is willing to pay close to 25% is usually
+a sign of financial irresponsibility that leads to bad performing loans
 
 
 # Multivariate Plots Section
 
 
->###When examining the income rates of employed individuals and their rates
->###We can see that a good floor for income level is $3000
->###This is the median income for defaulted loans in the HR category
->###It is also the bottom 25% of most almost every other grades defaulted loan
+When examining the income rates of employed individuals and their rates
+We can see that a good floor for income level is $3000
+This is the median income for defaulted loans in the HR category
+It is also the bottom 25% of most almost every other grades defaulted loan
 
 
 ```{r}
@@ -355,14 +365,14 @@ median(subset(ld, ProsperGradeAll=='C' & IncomeVerifiable=='False')
 ```
 
 
->###It looks like the Prosper grades also shifted like the way credit scores did
->###Just because the above graph resembles a normal distribution, doesn't mean
->###that it is a normal distribtion, credit standards changed after 2009
->###We will explore this in the bivariate plot section also
+It looks like the Prosper grades also shifted like the way credit scores did
+Just because the above graph resembles a normal distribution, doesn't mean
+that it is a normal distribtion, credit standards changed after 2009
+We will explore this in the bivariate plot section also
 
 ```{r}
 ggplot(ld, aes(x=ProsperGradeAll)) +
-  geom_histogram(data = subset(ld, ClosedDate>= '2009-01-01'), stat = 'count', 
+  geom_histogram(data = subset(ld, ClosedDate= '2009-01-01'), stat = 'count', 
                  aes(y = ..count.. / sum(..count..)), fill = 'blue', 
                  alpha = 0.4, width = 0.8) + 
   geom_histogram(data = subset(ld, ClosedDate< '2009-01-01'), stat = 'count', 
@@ -372,13 +382,13 @@ ggplot(ld, aes(x=ProsperGradeAll)) +
 ```
 
 
->###I am looking at the data before 2009 and after 2009
->###Prosper went through some changes because of the credit crisis and we can
->###see how they changed their lending criteria before and after 2009
+I am looking at the data before 2009 and after 2009
+Prosper went through some changes because of the credit crisis and we can
+see how they changed their lending criteria before and after 2009
 
 ```{r}
 ggplot(ld, aes(x=AvgCreditScore)) +
-  geom_histogram(data = subset(ld, ClosedDate>= '2009-01-01'), stat = 'count', 
+  geom_histogram(data = subset(ld, ClosedDate= '2009-01-01'), stat = 'count', 
                  aes(y = ..count.. / sum(..count..)), fill = 'blue', 
                  alpha = 0.4, width = 17) + 
   geom_histogram(data = subset(ld, ClosedDate< '2009-01-01'), stat = 'count', 
@@ -386,7 +396,7 @@ ggplot(ld, aes(x=AvgCreditScore)) +
                  alpha = 0.5, width = 8)+
   scale_y_continuous(labels = scales::percent) +
     coord_cartesian(xlim = c(400, 900)) + 
-  geom_vline(data = subset(ld, ClosedDate>= '2009-01-01'), 
+  geom_vline(data = subset(ld, ClosedDate= '2009-01-01'), 
              aes(xintercept = mean(AvgCreditScore, na.rm = T)), 
              color = 'blue', linetype='dashed', size=0.5) +
   geom_vline(data = subset(ld, ClosedDate < '2009-01-01'), 
@@ -399,21 +409,21 @@ ggplot(ld, aes(x=AvgCreditScore)) +
 ```
 
 
->###We can see that it looked like a fairly normal distribution prior to 2009
->###After 2009 the cut down on loans under 600 credit score
->###Their average credit score also increased from 653.59 to 708.91
+We can see that it looked like a fairly normal distribution prior to 2009
+After 2009 the cut down on loans under 600 credit score
+Their average credit score also increased from 653.59 to 708.91
 
 ```{r}
-mean(subset(ld, ClosedDate >= '2009-01-01')$AvgCreditScore, na.rm = T)
+mean(subset(ld, ClosedDate = '2009-01-01')$AvgCreditScore, na.rm = T)
 mean(subset(ld, ClosedDate < '2009-01-01')$AvgCreditScore, na.rm = T)
 ```
 
 
->###Because debt consolidation is the most popular loan category it is worth
->###exploring this category more and seeing what trends make successful loans
+Because debt consolidation is the most popular loan category it is worth
+exploring this category more and seeing what trends make successful loans
 
->###Below we can see the debt to income of Completed vs Defualted loans
->###Defaulted loans have 24% higher mean debt to income ratio 25% vs 31%
+Below we can see the debt to income of Completed vs Defualted loans
+Defaulted loans have 24% higher mean debt to income ratio 25% vs 31%
 
 ```{r}
 ggplot(subset(ld, Category == 'Debt Cons' & Status %in% 
@@ -447,9 +457,9 @@ mean(subset(ld, Category == 'Debt Cons'
      $DebtToIncomeRatio, na.rm = TRUE)
 ```
 
->###Looking at the bank card utilizatin rate at completed and defaulte loans
->###We can see that unsuccessful loans had 22% higher bank card utilization
->###50% vs 61%
+Looking at the bank card utilizatin rate at completed and defaulte loans
+We can see that unsuccessful loans had 22% higher bank card utilization
+50% vs 61%
 
 ```{r}
 ggplot() +
@@ -477,8 +487,8 @@ mean(subset(ld, Category != 'Debt Cons')$BankcardUtilization, na.rm = TRUE)
 ```
 
 
->###The loan quarter is formatted so that the Q is written first then the year
->###Thus below we are transforming it so the year is frst then the Q
+The loan quarter is formatted so that the Q is written first then the year
+Thus below we are transforming it so the year is frst then the Q
 
 
 ```{r}
@@ -486,12 +496,12 @@ ld <- mutate(ld, LoanQtr = paste(substring(LoanOriginationQuarter, 4,8),
                                  substring(LoanOriginationQuarter, 1,2)))
 ```
 
->###I visualized the loan payments by quarter by grade so we can see where their 
->###cash flows are coming from on a rolling quarter to quarter basis. We can see 
->###that C grade loans have grown more popular ad received more funding recently 
->###while B and A loans have remained consistent, and the number of AA loan 
->###flows droppedd after 2009 perhaps because the credit market recovered and 
->###good borrowers have refinanced or found other funding options.
+I visualized the loan payments by quarter by grade so we can see where their 
+cash flows are coming from on a rolling quarter to quarter basis. We can see 
+that C grade loans have grown more popular ad received more funding recently 
+while B and A loans have remained consistent, and the number of AA loan 
+flows droppedd after 2009 perhaps because the credit market recovered and 
+good borrowers have refinanced or found other funding options.
 
 ```{r}
 ggplot(ld, aes(LoanQtr, LP_CustomerPayments/1000000, fill = ProsperGradeAll)) +
@@ -500,9 +510,9 @@ ggplot(ld, aes(LoanQtr, LP_CustomerPayments/1000000, fill = ProsperGradeAll)) +
   scale_fill_brewer(palette="Pastel1")
 ```
 
->###Below we can see the loan amounts (in millions) based on grade so we can see
->###the quality of the loans originated as well as the amount of the loan.
->###We see that A, B, & C loans all grew in terms of loans originated near 2013
+Below we can see the loan amounts (in millions) based on grade so we can see
+the quality of the loans originated as well as the amount of the loan.
+We see that A, B, & C loans all grew in terms of loans originated near 2013
 
 ```{r}
 ggplot(ld, aes(LoanQtr, LoanOriginalAmount/1000000, fill = ProsperGradeAll)) +
@@ -511,8 +521,8 @@ ggplot(ld, aes(LoanQtr, LoanOriginalAmount/1000000, fill = ProsperGradeAll)) +
   scale_fill_brewer(palette="Pastel1")
 ```
 
->###Now we can look at each loan category and see if they are in good standing
->###We see the distribution in millions of how many million are in each status
+Now we can look at each loan category and see if they are in good standing
+We see the distribution in millions of how many million are in each status
 
 ```{r}
 ggplot(ld, aes(ProsperGradeAll, LoanOriginalAmount/1000000, fill = Status)) +
@@ -521,11 +531,11 @@ ggplot(ld, aes(ProsperGradeAll, LoanOriginalAmount/1000000, fill = Status)) +
   scale_fill_brewer(palette="Pastel1")
 ```
 
->###Below we can see what percentage of each status is complete, past due etc.
->###It looks like the largest incremental percentage jump is between C and D
->###This combined with our earlier analysis that showed D loans as having
->###a median interest rate similar to the defaulted status tells us C is 
->###probably the lowest category of loan that is a good investment.
+Below we can see what percentage of each status is complete, past due etc.
+It looks like the largest incremental percentage jump is between C and D
+This combined with our earlier analysis that showed D loans as having
+a median interest rate similar to the defaulted status tells us C is 
+probably the lowest category of loan that is a good investment.
 
 ```{r}
 ld2 <- ld %>% 
@@ -540,14 +550,14 @@ ggplot(ld2, aes(x = factor(ProsperGradeAll), y = perc*100, fill = factor(Status)
   scale_fill_brewer(palette="Pastel1")
 ```
 
->###Below we see the different occupations of loan holders and what percentage
->###of those loans are in good or bad standing
+Below we see the different occupations of loan holders and what percentage
+of those loans are in good or bad standing
 
->###Students at technical schools have the worst performing loans of all
->###Judges, Psycholigst and Dentists have the lowest default ratings
+Students at technical schools have the worst performing loans of all
+Judges, Psycholigst and Dentists have the lowest default ratings
 
->###Further analysis could be done with students where we take into account
->###Schools they attend, graduation rates, grades, and job placement data
+Further analysis could be done with students where we take into account
+Schools they attend, graduation rates, grades, and job placement data
 
 ```{r}
 ld3 <- ld %>% 
@@ -562,13 +572,13 @@ ggplot(ld3, aes(factor(Occupation), y = perc*100, fill = Status)) +
   scale_fill_brewer(palette="Pastel1")
 ```
 
->###Now you can see the loan based on loan reason and the current standing
->###N/A and personal loans are the worst performing with students also
->###Continue to perform badly and have high defaults.
+Now you can see the loan based on loan reason and the current standing
+N/A and personal loans are the worst performing with students also
+Continue to perform badly and have high defaults.
 
->###RV loans perform much better than all other categories perhaps because
->###RV customers are usually retired and older and trying to finance their
->###luxury purchase longer term.
+RV loans perform much better than all other categories perhaps because
+RV customers are usually retired and older and trying to finance their
+luxury purchase longer term.
 
 
 ```{r}
@@ -587,18 +597,18 @@ ggplot(ld4, aes(factor(Category), y = perc*100, fill = Status)) +
 
 # Final Plots and Summary
 
->###First I think it's important to see Prosper's credit rating distribution
->###This plot shows both the pre credit crisis and post credit crisis data
->###It's good to see how Prosper adjusted their standards afterwards
+First I think it's important to see Prosper's credit rating distribution
+This plot shows both the pre credit crisis and post credit crisis data
+It's good to see how Prosper adjusted their standards afterwards
 
->###Prosper's adjustments show us that they initially took on many loans of
->###all different credit categories to gain marketshare but after 2009
->###they really tightened their lending policy away from bad credit scores
+Prosper's adjustments show us that they initially took on many loans of
+all different credit categories to gain marketshare but after 2009
+they really tightened their lending policy away from bad credit scores
 
 ```{r echo=FALSE, Plot_One}
 
 ggplot(ld, aes(x=AvgCreditScore), xlab('Credit Score')) +
-  geom_histogram(data = subset(ld, ClosedDate>= '2009-01-01'), stat = 'count', 
+  geom_histogram(data = subset(ld, ClosedDate= '2009-01-01'), stat = 'count', 
                  aes(y = ..count.. / sum(..count..)), fill = 'blue', 
                  alpha = 0.4, width = 17) + 
   geom_histogram(data = subset(ld, ClosedDate< '2009-01-01'), stat = 'count', 
@@ -607,7 +617,7 @@ ggplot(ld, aes(x=AvgCreditScore), xlab('Credit Score')) +
   scale_y_continuous(labels = scales::percent) +
   ggtitle("Credit Score Percentage Distribution") +
   coord_cartesian(xlim = c(400, 900)) + 
-  geom_vline(data = subset(ld, ClosedDate>= '2009-01-01'), 
+  geom_vline(data = subset(ld, ClosedDate= '2009-01-01'), 
              aes(xintercept = mean(AvgCreditScore, na.rm = T)), 
              color = 'blue', linetype='dashed', size=0.5) +
   geom_vline(data = subset(ld, ClosedDate < '2009-01-01'), 
@@ -621,11 +631,11 @@ ggplot(ld, aes(x=AvgCreditScore), xlab('Credit Score')) +
 ```
 
 
->###This chart shows how much in loans prosper was generating and by what grade
->###Its good to see that they figured out what kind of loans are most successful
->###Then after 2010 they ramped up their loans and we can see how C grade loans
->###grew the most, this is consistent with our analysis in seeing the C is the
->###lowest grade of loan that does not have a large incremental rise in defaults
+This chart shows how much in loans prosper was generating and by what grade
+Its good to see that they figured out what kind of loans are most successful
+Then after 2010 they ramped up their loans and we can see how C grade loans
+grew the most, this is consistent with our analysis in seeing the C is the
+lowest grade of loan that does not have a large incremental rise in defaults
 
 ```{r echo=FALSE, Plot_Two}
 ggplot(ld, aes(LoanQtr, LoanOriginalAmount/1000000, fill = ProsperGradeAll)) +
@@ -636,17 +646,17 @@ ggplot(ld, aes(LoanQtr, LoanOriginalAmount/1000000, fill = ProsperGradeAll)) +
   labs(y = 'Loan Origination amount in Millions', x = 'Quarter')
 ```
 
->###Finally here we can see the performance of each loan category
->###Its interesting to see different categories and how their loans perform
->###NA and Personal loans perform the worst perhaps because the reason for the
->###loan is not specified and because borrowers that do not have a specific
->###reason for the loan. 
+Finally here we can see the performance of each loan category
+Its interesting to see different categories and how their loans perform
+NA and Personal loans perform the worst perhaps because the reason for the
+loan is not specified and because borrowers that do not have a specific
+reason for the loan. 
 
->###Luxury items like RV, Motorcycle, and Boats perform the best because people
->###would not buy these items unless they could afford the luxury
+Luxury items like RV, Motorcycle, and Boats perform the best because people
+would not buy these items unless they could afford the luxury
 
->###Wedding, engagement rings, etc are all also times that require people to be
->###a lot more responsible so these loans look like they are more successful
+Wedding, engagement rings, etc are all also times that require people to be
+a lot more responsible so these loans look like they are more successful
 
 ```{r echo=FALSE, Plot_Three}
 ld4 <- ld %>% 
@@ -665,42 +675,42 @@ ggplot(ld4, aes(factor(Category), y = perc*100, fill = Status)) +
 
 #Reflection
 
->###Overall I learned a lot about the different criteria's that could be used
->###to create a good portfolio of loans that avoids parameters that usually
->###lead to defaults.
+Overall I learned a lot about the different criteria's that could be used
+to create a good portfolio of loans that avoids parameters that usually
+lead to defaults.
 
->###I would look for loans that are below the 25% rate and C grade or above
->###Also people who are employed and make $3000 per month and certain categories
+I would look for loans that are below the 25% rate and C grade or above
+Also people who are employed and make $3000 per month and certain categories
 
->###For debt consolidation loans I would look at credit card utilization rates
->###and debt to income rate that are closer to that of complete or current loans
+For debt consolidation loans I would look at credit card utilization rates
+and debt to income rate that are closer to that of complete or current loans
 
->###I was surprised to see that loans for luxury goods had such high completions 
->###Some of the struggles I had were that defaulted and completed loans had many
->###of the same characteristics, and if I were to go into more detail I would
->###do a more thorough analysis within each type of loan
+I was surprised to see that loans for luxury goods had such high completions 
+Some of the struggles I had were that defaulted and completed loans had many
+of the same characteristics, and if I were to go into more detail I would
+do a more thorough analysis within each type of loan
 
->###I think having more unique data points like what types of schools students
->###were applying from and the students stats like their grades and majors
->###would be helpful in finding successful loans
+I think having more unique data points like what types of schools students
+were applying from and the students stats like their grades and majors
+would be helpful in finding successful loans
 
->###I think there is no reason to give N/A loans, and personal loans need to 
->###have more of a description of what the funds are being used for
+I think there is no reason to give N/A loans, and personal loans need to 
+have more of a description of what the funds are being used for
 
->###To take this analysis further I would backtest the parameters I found for 
->###successful loans and come up with a factor analysis to see how the different
->###returns are currently being calculated and look for possible arbitrage
->###opportunities with underpriced loans. I would create a model portfolio
->###and see show the risk level and what the overall percentage return would be
+To take this analysis further I would backtest the parameters I found for 
+successful loans and come up with a factor analysis to see how the different
+returns are currently being calculated and look for possible arbitrage
+opportunities with underpriced loans. I would create a model portfolio
+and see show the risk level and what the overall percentage return would be
 
->###It was great to see that we could get such detailed analysis of the loans
->###I would think that many investors just pick loans based on categories they 
->###think are successful. I would not have lent to luxry items like boats
->### because I live with a high level of financial responsibility and know
->###that boats are a bad investment, but the loan data suggests otherwise.
+It was great to see that we could get such detailed analysis of the loans
+I would think that many investors just pick loans based on categories they 
+think are successful. I would not have lent to luxry items like boats
+ because I live with a high level of financial responsibility and know
+that boats are a bad investment, but the loan data suggests otherwise.
 
->###I think the skills I learned here will really shape how I look at data and 
->###decisions in the future. Scraping the data with python for any decision
->###and then exploring it with R will lead me to make much better decisions
->###in my personal and professional life and there is no excuse to make an 
->###uninformed and non data-driven decision in the future.
+I think the skills I learned here will really shape how I look at data and 
+decisions in the future. Scraping the data with python for any decision
+and then exploring it with R will lead me to make much better decisions
+in my personal and professional life and there is no excuse to make an 
+uninformed and non data-driven decision in the future.
